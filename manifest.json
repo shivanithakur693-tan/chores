@@ -1,0 +1,25 @@
+{
+  "name": "Ghar Ka Kaam - Daily Chores",
+  "short_name": "Ghar Kaam",
+  "description": "Daily household chore checklist with spoken Hindi questions and tap-to-answer icons — no reading or writing required.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F4F7FB",
+  "theme_color": "#4A90D9",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
