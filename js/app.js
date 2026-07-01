@@ -9,8 +9,7 @@
  * (see SETUP.md). Until you do, results just won't be logged to the
  * Google Sheet — the app on the phone still works fine either way.
  * ------------------------------------------------------------------- */
-const SHEET_WEBHOOK_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
-
+const SHEET_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxhTj0VG8iYTzUfssuPJ57WhqwTaIKFqo_kj2xRAeWpdRzUmbu4uWc84Dwrn-sPB1XK/exec";
 /* ---------------------------------------------------------------------
  * State
  * ------------------------------------------------------------------- */
