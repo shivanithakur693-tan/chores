@@ -11,8 +11,7 @@
    service worker knows to re-cache everything on the next load.
    ===================================================================== */
 
-const CACHE_NAME = "ghar-kaam-cache-v1";
-
+const CACHE_NAME = "ghar-kaam-cache-v2";
 const FILES_TO_CACHE = [
   "./",
   "index.html",
@@ -48,6 +47,8 @@ const FILES_TO_CACHE = [
   "images/utensils_deep_clean.svg",
   "images/dust_all_surfaces.svg",
   "images/deep_clean_room.svg",
+  "images/room_shelf.svg",
+  "images/tiffin_rubber_seal.svg",
 
   // ui icons
   "images/checkmark.svg",
