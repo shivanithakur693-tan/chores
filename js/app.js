@@ -1,3 +1,5 @@
+$ cat /Users/shivani.thakur/voice-task-bot/js/app.js
+
 /* =====================================================================
    app.js — app logic for the voice task bot.
    No frameworks, no build step, plain browser JS only.
@@ -10,6 +12,7 @@
  * Google Sheet — the app on the phone still works fine either way.
  * ------------------------------------------------------------------- */
 const SHEET_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxhTj0VG8iYTzUfssuPJ57WhqwTaIKFqo_kj2xRAeWpdRzUmbu4uWc84Dwrn-sPB1XK/exec";
+
 /* ---------------------------------------------------------------------
  * State
  * ------------------------------------------------------------------- */
@@ -17,6 +20,7 @@ let queue = [];          // ordered list of today's task objects
 let currentIndex = 0;    // which task in the queue we're on
 let results = [];        // { id, textHi, image, status: 'yes' | 'no' }
 let hindiVoice = null;   // cached best-matching Hindi voice, once found
+let speechToken = 0;     // bumped on every speakHindi() call, see below
 
 /* ---------------------------------------------------------------------
  * DOM references
@@ -73,8 +77,23 @@ function pickHindiVoice() {
   );
 }
 
-function speakHindi(text) {
-  if (!("speechSynthesis" in window)) return; // silently skip if unsupported
+/* onComplete (optional) fires once the sentence has finished being
+ * spoken — used to keep the answer buttons locked until the person has
+ * actually heard the question, so they can't just tap-tap-tap through
+ * without listening. speechToken guards against a stale callback from a
+ * previous, since-superseded call (e.g. cancel() firing an old onend,
+ * or the fallback timer below) wrongly unlocking the CURRENT task. */
+function speakHindi(text, onComplete) {
+  const myToken = ++speechToken;
+  const finish = function () {
+    if (myToken === speechToken && onComplete) onComplete();
+  };
+
+  if (!("speechSynthesis" in window)) {
+    finish(); // no TTS support — don't leave the person stuck unable to answer
+    return;
+  }
+
   try {
     window.speechSynthesis.cancel(); // stop anything currently queued/speaking
     const utter = new SpeechSynthesisUtterance(text);
@@ -83,9 +102,19 @@ function speakHindi(text) {
     if (hindiVoice) utter.voice = hindiVoice;
     utter.rate = 0.95;
     utter.pitch = 1.0;
+    utter.onend = finish;
+    utter.onerror = finish;
     window.speechSynthesis.speak(utter);
+
+    // Safety net: some Android/Chrome versions don't reliably fire
+    // "onend" for speechSynthesis. If that happens, unlock anyway after
+    // a generous estimated speaking duration rather than leaving the
+    // person stuck forever.
+    const estimatedMs = Math.max(1200, text.length * 90) + 1500;
+    setTimeout(finish, estimatedMs);
   } catch (err) {
     console.error("Speech synthesis failed:", err);
+    finish();
   }
 }
 
@@ -131,7 +160,18 @@ function showCurrentTask() {
   const task = queue[currentIndex];
   taskImageEl.src = "images/" + task.image;
   taskImageEl.alt = "";
-  speakHindi(task.textHi);
+  setAnswerButtonsEnabled(false);
+  speakHindi(task.textHi, function () {
+    setAnswerButtonsEnabled(true);
+  });
+}
+
+// Locks the yes/no buttons (visually + functionally) until the current
+// question has finished being spoken, so people can't answer before
+// hearing it.
+function setAnswerButtonsEnabled(enabled) {
+  btnYes.disabled = !enabled;
+  btnNo.disabled = !enabled;
 }
 
 function answerCurrentTask(status) {
